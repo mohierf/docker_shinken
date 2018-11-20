@@ -1,5 +1,5 @@
 # Shinken Docker installation using pip (latest)
-FROM        ubuntu:xenial
+FROM        debian:jessie
 MAINTAINER  Rodrigo Brayner
 
 # Install Shinken, Nagios plugins, apache2 and supervisord
@@ -25,7 +25,7 @@ RUN         useradd --create-home shinken && \
                 update-rc.d -f shinken remove
 
 # Install shinken modules from shinken.io
-RUN         mkdir /etc/shinken
+#RUN         mkdir /etc/shinken
 RUN         chown -R shinken:shinken /etc/shinken/ && \
                 su - shinken -c 'shinken --init' && \
                 su - shinken -c 'shinken install webui2' && \
@@ -52,7 +52,7 @@ RUN         pip install Twisted==11.1.0 && \
 # Install and configure thruk
 RUN         gpg --keyserver keys.gnupg.net --recv-keys F8C1CA08A57B9ED7 && \
                 gpg --armor --export F8C1CA08A57B9ED7 | apt-key add - && \
-                echo "deb http://labs.consol.de/repo/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/labs-consol-stable.list && \
+                echo "deb http://labs.consol.de/repo/testing/debian $(lsb_release -cs) main" > /etc/apt/sources.list.d/labs-consol-testing.list && \
                 apt-get update && \
                 apt-get install -y thruk && \
                 apt-get clean
