@@ -9,7 +9,8 @@ RUN         apt-get update && apt-get install -y python-pip \
                 nagios-plugins \
                 libsys-statistics-linux-perl \
                 apache2 \
-                apache2-bin \
+                libapache2-mod-proxy-html \
+#                apache2-bin \
                 supervisor \
                 python-dev \
                 python-cairo \
@@ -20,7 +21,7 @@ RUN         apt-get update && apt-get install -y python-pip \
                 curl \
                 ntp
                 
-RUN         a2enmod proxy_html
+#RUN         a2enmod proxy_html
 RUN         useradd --create-home shinken && \
                 pip install shinken pymongo>=3.0.3 requests arrow bottle==0.12.8 && \
                 update-rc.d -f apache2 remove && \
