@@ -17,6 +17,8 @@ RUN         apt-get update && apt-get install -y python-pip \
                 libssl-dev \
                 inotify-tools \
                 ntp
+                
+RUN         a2enmod proxy_html
 RUN         useradd --create-home shinken && \
                 pip install shinken pymongo>=3.0.3 requests arrow bottle==0.12.8 && \
                 update-rc.d -f apache2 remove && \
