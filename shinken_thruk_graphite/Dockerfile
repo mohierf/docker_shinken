@@ -1,6 +1,6 @@
 # Shinken Docker installation using pip (latest)
-FROM        debian:wheezy
-MAINTAINER  Rohit Gupta
+FROM        ubuntu:xenial
+MAINTAINER  Rodrigo Brayner
 
 # Install Shinken, Nagios plugins, apache2 and supervisord
 RUN         apt-get update && apt-get install -y python-pip \
@@ -49,7 +49,7 @@ RUN         pip install Twisted==11.1.0 && \
 # Install and configure thruk
 RUN         gpg --keyserver keys.gnupg.net --recv-keys F8C1CA08A57B9ED7 && \
                 gpg --armor --export F8C1CA08A57B9ED7 | apt-key add - && \
-                echo 'deb http://labs.consol.de/repo/stable/debian wheezy main' >> /etc/apt/sources.list && \
+                echo "deb http://labs.consol.de/repo/stable/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/labs-consol-stable.list && \
                 apt-get update && \
                 apt-get install -y thruk && \
                 apt-get clean
