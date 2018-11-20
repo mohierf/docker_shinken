@@ -9,7 +9,7 @@ RUN         apt-get update && apt-get install -y python-pip \
                 nagios-plugins \
                 libsys-statistics-linux-perl \
                 apache2 \
-                libapache2-mod-proxy-html \
+                apache2-bin \
                 supervisor \
                 python-dev \
                 python-cairo \
