@@ -25,6 +25,7 @@ RUN         useradd --create-home shinken && \
                 update-rc.d -f shinken remove
 
 # Install shinken modules from shinken.io
+RUN         mkdir /etc/shinken
 RUN         chown -R shinken:shinken /etc/shinken/ && \
                 su - shinken -c 'shinken --init' && \
                 su - shinken -c 'shinken install webui2' && \
