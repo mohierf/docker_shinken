@@ -16,6 +16,8 @@ RUN         apt-get update && apt-get install -y python-pip \
                 python-crypto \
                 libssl-dev \
                 inotify-tools \
+                sudo \
+                curl \
                 ntp
                 
 RUN         a2enmod proxy_html
@@ -50,9 +52,8 @@ RUN         pip install Twisted==11.1.0 && \
                 pip install gunicorn==19.1.1
 
 # Install and configure thruk
-RUN         gpg --keyserver keys.gnupg.net --recv-keys F8C1CA08A57B9ED7 && \
-                gpg --armor --export F8C1CA08A57B9ED7 | apt-key add - && \
-                echo "deb http://labs.consol.de/repo/testing/debian $(lsb_release -cs) main" > /etc/apt/sources.list.d/labs-consol-testing.list && \
+RUN             curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add - && \ 
+                echo "deb http://labs.consol.de/repo/stable/debian jessie main" > /etc/apt/sources.list.d/labs-consol-stable.list && \
                 apt-get update && \
                 apt-get install -y thruk && \
                 apt-get clean
