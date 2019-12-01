@@ -48,9 +48,11 @@ RUN         mkdir -p /var/log/nginx && \
 
 # Configure Shinken modules
 ADD         shinken/shinken.cfg /etc/shinken/shinken.cfg
+# Update default configuration
 ADD         shinken/broker-master.cfg /etc/shinken/brokers/broker-master.cfg
 ADD         shinken/poller-master.cfg /etc/shinken/pollers/poller-master.cfg
 ADD         shinken/scheduler-master.cfg /etc/shinken/schedulers/scheduler-master.cfg
+# Configure Shinken modules
 COPY        shinken/webui2.cfg /etc/shinken/modules/webui2.cfg
 COPY        shinken/webui2_worldmap.cfg /var/lib/shinken/modules/webui2/plugins/worldmap/plugin.cfg
 RUN         mkdir -p /etc/shinken/custom_configs /usr/local/custom_plugins && \
@@ -72,8 +74,8 @@ VOLUME      ["/etc/shinken/custom_configs", "/usr/local/custom_plugins"]
 # configure supervisor
 ADD         supervisor/conf.d/* /etc/supervisor/conf.d/
 
-# Expost port 80 (nginx)
-EXPOSE  80
+# Expose port 80 (apache2)
+EXPOSE 80
 
 # Default docker process
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]

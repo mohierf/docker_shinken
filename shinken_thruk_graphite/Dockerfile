@@ -20,7 +20,7 @@ RUN         apt-get update && apt-get install -y python-pip \
                 sudo \
                 curl \
                 ntp
-                
+
 #RUN         a2enmod proxy_html
 RUN         useradd --create-home shinken && \
                 pip install shinken pymongo>=3.0.3 requests arrow bottle==0.12.8 && \
@@ -53,7 +53,7 @@ RUN         pip install Twisted==11.1.0 && \
                 pip install gunicorn==19.1.1
 
 # Install and configure thruk
-RUN             curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add - && \ 
+RUN             curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add - && \
                 echo "deb http://labs.consol.de/repo/stable/debian jessie main" > /etc/apt/sources.list.d/labs-consol-stable.list && \
                 apt-get update && \
                 apt-get install -y thruk && \
@@ -71,14 +71,22 @@ RUN         cd /usr/src/nrpe-2.15/ && \
                 rm -rf /usr/src/nrpe-2.15
 
 # Configure apache
-ADD         shinken/shinken_apache.conf /etc/apache2/conf.d/shinken_apache.conf
-RUN         ln -sf /etc/apache2/mods-available/proxy* /etc/apache2/mods-enabled/
+ADD         shinken/shinken_apache.conf /etc/apache2/conf-available/shinken_apache.conf
+RUN         ln -sf /etc/apache2/conf-available/shinken* /etc/apache2/conf-enabled/
 
-# Configure Shinken modules
+# Enable some useful apache modules
+RUN         a2enmod proxy_html
+RUN         a2enmod proxy_http
+RUN         a2enmod xml2enc
+RUN         a2enmod slotmem_shm
+
+# Configure Shinken daemons
 ADD         shinken/shinken.cfg /etc/shinken/shinken.cfg
+# Update default configuration
 ADD         shinken/broker-master.cfg /etc/shinken/brokers/broker-master.cfg
 ADD         shinken/poller-master.cfg /etc/shinken/pollers/poller-master.cfg
 ADD         shinken/scheduler-master.cfg /etc/shinken/schedulers/scheduler-master.cfg
+# Configure Shinken modules
 COPY        shinken/webui2.cfg /etc/shinken/modules/webui2.cfg
 COPY        shinken/webui2_worldmap.cfg /var/lib/shinken/modules/webui2/plugins/worldmap/plugin.cfg
 ADD         shinken/livestatus.cfg /etc/shinken/modules/livestatus.cfg
@@ -115,8 +123,8 @@ VOLUME      ["/etc/shinken/custom_configs", "/usr/local/custom_plugins"]
 # configure supervisor
 ADD         supervisor/conf.d/* /etc/supervisor/conf.d/
 
-# Expost port 80 (apache2)
-EXPOSE  80
+# Expose port 80 (apache2)
+EXPOSE 80
 
 # Default docker process
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]

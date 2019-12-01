@@ -16,14 +16,14 @@ RUN         apt-get update && apt-get install -y python-pip \
                 inotify-tools \
                 ntp
 RUN         useradd --create-home shinken && \
-                pip install shinken && \
+                pip install shinken pymongo>=3.0.3 requests arrow bottle==0.12.8 && \
                 update-rc.d -f apache2 remove && \
                 update-rc.d -f shinken remove
 
 # Install shinken modules from shinken.io
 RUN         chown -R shinken:shinken /etc/shinken/ && \
                 su - shinken -c 'shinken --init' && \
-                su - shinken -c 'shinken install webui' && \
+                su - shinken -c 'shinken install webui2' && \
                 su - shinken -c 'shinken install auth-htpasswd' && \
                 su - shinken -c 'shinken install sqlitedb' && \
                 su - shinken -c 'shinken install pickle-retention-file-scheduler' && \
@@ -32,9 +32,8 @@ RUN         chown -R shinken:shinken /etc/shinken/ && \
                 su - shinken -c 'shinken install livestatus'
 
 # Install and configure thruk
-RUN         gpg --keyserver keys.gnupg.net --recv-keys F8C1CA08A57B9ED7 && \
-                gpg --armor --export F8C1CA08A57B9ED7 | apt-key add - && \
-                echo 'deb http://labs.consol.de/repo/stable/debian wheezy main' >> /etc/apt/sources.list && \
+RUN             curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add - && \
+                echo "deb http://labs.consol.de/repo/stable/debian jessie main" > /etc/apt/sources.list.d/labs-consol-stable.list && \
                 apt-get update && \
                 apt-get install -y thruk && \
                 apt-get clean
@@ -51,15 +50,24 @@ RUN         cd /usr/src/nrpe-2.15/ && \
                 rm -rf /usr/src/nrpe-2.15
 
 # Configure apache
-ADD         shinken/shinken_apache.conf /etc/apache2/conf.d/shinken_apache.conf
-RUN         ln -sf /etc/apache2/mods-available/proxy* /etc/apache2/mods-enabled/
+ADD         shinken/shinken_apache.conf /etc/apache2/conf-available/shinken_apache.conf
+RUN         ln -sf /etc/apache2/conf-available/shinken* /etc/apache2/conf-enabled/
 
-# Configure Shinken modules
+# Enable some useful apache modules
+RUN         a2enmod proxy_html
+RUN         a2enmod proxy_http
+RUN         a2enmod xml2enc
+RUN         a2enmod slotmem_shm
+
+# Configure Shinken daemons
 ADD         shinken/shinken.cfg /etc/shinken/shinken.cfg
+# Update default configuration
 ADD         shinken/broker-master.cfg /etc/shinken/brokers/broker-master.cfg
 ADD         shinken/poller-master.cfg /etc/shinken/pollers/poller-master.cfg
 ADD         shinken/scheduler-master.cfg /etc/shinken/schedulers/scheduler-master.cfg
-ADD         shinken/webui2.cfg /etc/shinken/modules/webui2.cfg
+# Configure Shinken modules
+COPY        shinken/webui2.cfg /etc/shinken/modules/webui2.cfg
+COPY        shinken/webui2_worldmap.cfg /var/lib/shinken/modules/webui2/plugins/worldmap/plugin.cfg
 ADD         shinken/livestatus.cfg /etc/shinken/modules/livestatus.cfg
 RUN         mkdir -p /etc/shinken/custom_configs /usr/local/custom_plugins && \
                 ln -sf /etc/shinken/custom_configs/htpasswd.users /etc/shinken/htpasswd.users && \
@@ -83,8 +91,8 @@ VOLUME      ["/etc/shinken/custom_configs", "/usr/local/custom_plugins"]
 # configure supervisor
 ADD         supervisor/conf.d/* /etc/supervisor/conf.d/
 
-# Expost port 80 (apache2)
-EXPOSE  80
+# Expose port 80 (apache2)
+EXPOSE 80
 
 # Default docker process
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]
