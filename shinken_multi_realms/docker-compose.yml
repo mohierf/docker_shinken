@@ -1,0 +1,87 @@
+version: '2'
+
+services:
+  shinken:
+    build:
+      context: .
+    environment:
+      - "TZ=UTC"  # UTC can be replaced by any valid timezone.
+    ports:
+      - "80:80"
+      - "50000:50000"
+    networks:
+      - shinken
+    volumes:
+      - ./custom_configs:/etc/shinken/custom_configs
+      - ./extra_plugins:/usr/local/custom_plugins
+# Shinken daemons are not allowed to write logs :/
+#      - ./data/shinken_etc:/etc/shinken:ro
+#      - ./data/shinken_logs:/var/log/shinken:ro
+
+  # Thruk, from an existing docker image
+  thruk:
+    # See: https://hub.docker.com/r/meyer91/thruk
+    image: meyer91/thruk
+    restart: unless-stopped
+    # Must set an hostname, else starting fails
+    hostname: thruk.mydomain
+    networks:
+      - shinken
+    ports:
+      - "8008:80"
+
+  # Graphite, for the metrics
+  graphite:
+    # See: https://hub.docker.com/r/graphiteapp/docker-graphite-statsd
+    image: graphiteapp/graphite-statsd:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shinken
+    ports:
+      - "8080:80"
+      - "2003-2004:2003-2004"
+      - "2023-2024:2023-2024"
+      - "8125:8125/udp"
+      - "8126:8126"
+#    volumes:
+#      - ${GRAPHITE_DATADIR}:/alignak
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "3"
+
+  # Mongo DB, for the Shinken WebUI + LiveStatus
+  mongodb:
+    image: mongo:4.0
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shinken
+    volumes:
+      - ${MONGO_DATADIR}/db:/data/db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "3"
+
+  # Mongo Express, UI for MongoDB
+  mongoexpress:
+    image: mongo-express
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shinken
+    ports:
+      - "8081:8081"
+
+networks:
+  shinken:
+  default:
+    external:
+      name: default
