@@ -137,8 +137,8 @@ RUN cd /repos && \
 
 # Get the livestatus module
 ARG MODULE_NAME=mod-livestatus
-ARG MODULE_GIT_REPO=shinken-monitoring/$MODULE_NAME
-ARG MODULE_GIT_BRANCH=master
+ARG MODULE_GIT_REPO=mohierf/$MODULE_NAME
+ARG MODULE_GIT_BRANCH=develop
 RUN cd /repos && \
     git clone https://github.com/$MODULE_GIT_REPO && \
     cd $MODULE_NAME && \
@@ -150,7 +150,7 @@ RUN cd /repos && \
 # Get the logstore-mongo module
 ARG MODULE_NAME=mod-logstore-mongodb
 ARG MODULE_GIT_REPO=mohierf/$MODULE_NAME
-ARG MODULE_GIT_BRANCH=pymongo3
+ARG MODULE_GIT_BRANCH=develop
 RUN cd /repos && \
     git clone https://github.com/$MODULE_GIT_REPO && \
     cd $MODULE_NAME && \
@@ -174,7 +174,7 @@ RUN cd /repos && \
     cp -r module/* /var/lib/shinken/modules/mongo-logs
 
 # Get the WebUI module
-RUN pwd
+RUN pwd && pwd
 ARG MODULE_NAME=mod-webui
 # Main repository
 #ARG MODULE_GIT_REPO=shinken-monitoring/$MODULE_NAME
